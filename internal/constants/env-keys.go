@@ -1,0 +1,13 @@
+package constants
+
+const (
+	PORT                 = "PORT"
+	CLIENT_PORT          = "CLIENT_PORT"
+	GPT_ACCOUNT_ID       = "YANDEX_ACCOUNT_ID"
+	GPT_KEY_ID           = "YANDEX_KEY_ID"
+	GPT_FOLDER_ID        = "YANDEX_FOLDER_ID"
+	GPT_PRIVATE_KEY_FILE = "YANDEX_PRIVATE_KEY_FILE"
+	GPT_PRIVATE_KEY      = "YANDEX_PRIVATE_KEY"
+	SECRET_APP_KEY       = "SECRET_APP_KEY"
+	DEV_MODE             = "DEV_MODE"
+)
