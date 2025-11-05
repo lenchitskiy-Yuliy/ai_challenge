@@ -32,23 +32,13 @@ func MakeGPTHandler(GPTUsecase usecase.GPTUsecase) router.AppHandler {
 			return nil, errors.BadRequest("cannot read body", err)
 		}
 
-		var req requestDTO
+		var req map[string]interface{}
 
 		if err := json.Unmarshal(body, &req); err != nil {
 			return nil, errors.BadRequest("invalid JSON", err)
 		}
 
-		if len(req.Messages) == 0 {
-			return nil, errors.BadRequest("messages is empty", nil)
-		}
-
-		msgs := make([]usecase.GPTMessage, 0, len(req.Messages))
-
-		for _, m := range req.Messages {
-			msgs = append(msgs, usecase.GPTMessage{Role: m.Role, Text: m.Text})
-		}
-
-		errGPT, reply := GPTUsecase.Complete(ctx, msgs)
+		errGPT, reply := GPTUsecase.Complete(ctx, req)
 
 		if errGPT != nil {
 			return nil, errors.Internal("gpt completion failed", errGPT.Err)

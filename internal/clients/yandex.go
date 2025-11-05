@@ -23,13 +23,8 @@ import (
 	"golang.org/x/time/rate"
 )
 
-type Message struct {
-	Role string `json:"role"`
-	Text string `json:"text"`
-}
-
 type YandexClient interface {
-	CallCompletion(ctx context.Context, messages []Message) (string, error)
+	CallCompletion(ctx context.Context, body map[string]interface{}) (string, error)
 }
 
 type yandexClient struct {
@@ -67,7 +62,7 @@ func NewYandexClient(envs *config.Envs, logger *zap.Logger) YandexClient {
 	}
 }
 
-func (c *yandexClient) CallCompletion(ctx context.Context, messages []Message) (string, error) {
+func (c *yandexClient) CallCompletion(ctx context.Context, body map[string]interface{}) (string, error) {
 	if err := c.limiter.WaitN(ctx, 1); err != nil {
 		return "", fmt.Errorf("rate limit: %w", err)
 	}
@@ -79,14 +74,29 @@ func (c *yandexClient) CallCompletion(ctx context.Context, messages []Message) (
 		}
 
 		url := "https://llm.api.cloud.yandex.net/foundationModels/v1/completion"
-		payload := map[string]interface{}{
-			"modelUri": fmt.Sprintf("gpt://%s/yandexgpt/latest", c.envs.FolderID),
-			"completionOptions": map[string]interface{}{
-				"temperature": 0.6,
-				"maxTokens":   500,
-			},
-			"messages": messages,
+
+		defaultCompletion := map[string]interface{}{
+			"temperature": 0.6,
+			"maxTokens":   500,
 		}
+
+		payload := map[string]interface{}{
+			"modelUri":          fmt.Sprintf("gpt://%s/yandexgpt/latest", c.envs.FolderID),
+			"completionOptions": defaultCompletion,
+		}
+
+		if userOpts, ok := body["completionOptions"].(map[string]interface{}); ok {
+			for k, v := range userOpts {
+				defaultCompletion[k] = v
+			}
+			payload["completionOptions"] = defaultCompletion
+			delete(body, "completionOptions")
+		}
+
+		for k, v := range body {
+			payload[k] = v
+		}
+
 		data, _ := json.Marshal(payload)
 		req, _ := http.NewRequestWithContext(ctx, "POST", url, bytes.NewReader(data))
 		req.Header.Set("Authorization", "Bearer "+token)
@@ -97,30 +107,37 @@ func (c *yandexClient) CallCompletion(ctx context.Context, messages []Message) (
 			return nil, err
 		}
 		defer resp.Body.Close()
-		body, _ := io.ReadAll(resp.Body)
+
+		bodyResp, _ := io.ReadAll(resp.Body)
 		if resp.StatusCode != http.StatusOK {
-			return nil, fmt.Errorf("llm returned %d: %s", resp.StatusCode, string(body))
+			return nil, fmt.Errorf("llm returned %d: %s", resp.StatusCode, string(bodyResp))
 		}
+
 		var result map[string]interface{}
-		if err := json.Unmarshal(body, &result); err != nil {
+		if err := json.Unmarshal(bodyResp, &result); err != nil {
 			return nil, err
 		}
+
 		resMap, ok := result["result"].(map[string]interface{})
 		if !ok {
 			return nil, fmt.Errorf("unexpected response format")
 		}
+
 		alts, ok := resMap["alternatives"].([]interface{})
 		if !ok || len(alts) == 0 {
 			return nil, fmt.Errorf("no alternatives")
 		}
+
 		alt0, ok := alts[0].(map[string]interface{})
 		if !ok {
 			return nil, fmt.Errorf("bad alt format")
 		}
+
 		msg, ok := alt0["message"].(map[string]interface{})
 		if !ok {
 			return nil, fmt.Errorf("no message")
 		}
+
 		text, _ := msg["text"].(string)
 		return text, nil
 	})

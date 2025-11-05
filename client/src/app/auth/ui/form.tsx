@@ -25,7 +25,7 @@ export function Form() {
     >
       <StringField label="Введите пароль" model={passwordField} type="password" />
 
-      <IconButton type="submit" sx={{ p: 1, ml: 1 }} aria-label="search" disabled={disabelSubmit}>
+      <IconButton type="submit" sx={{ p: 1, ml: 1 }} disabled={disabelSubmit}>
         <LoginIcon />
       </IconButton>
     </Box>

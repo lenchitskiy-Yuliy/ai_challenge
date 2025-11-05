@@ -1,6 +1,8 @@
 import { List, ListItem, ListItemText } from '@mui/material';
 import { useUnit } from 'effector-react';
 import { $messages } from '../model/store';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 export function Dialog() {
   const { messages } = useUnit({ messages: $messages });
@@ -11,7 +13,11 @@ export function Dialog() {
         <ListItem key={index}>
           <ListItemText
             primary={message.role === 'user' ? 'Вы' : 'AI'}
-            secondary={message.text}
+            secondary={
+              <>
+                <Markdown remarkPlugins={[remarkGfm]}>{message.text}</Markdown>
+              </>
+            }
             sx={{
               backgroundColor: message.role === 'user' ? '#e0f7fa' : '#f3e5f5',
               borderRadius: 1,

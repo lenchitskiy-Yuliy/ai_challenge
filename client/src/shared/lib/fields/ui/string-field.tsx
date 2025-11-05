@@ -4,7 +4,8 @@ import type { ChangeEvent } from 'react';
 import type { StringFieldModel } from '../models/create-string-field';
 import { TextField, type TextFieldProps } from '@mui/material';
 
-interface StringFieldProps extends Pick<TextFieldProps, 'label' | 'type'> {
+interface StringFieldProps
+  extends Pick<TextFieldProps, 'label' | 'type' | 'fullWidth' | 'multiline' | 'minRows'> {
   model: StringFieldModel;
 }
 

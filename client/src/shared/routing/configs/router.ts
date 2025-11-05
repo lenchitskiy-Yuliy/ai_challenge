@@ -9,6 +9,10 @@ export const routes = {
     route: createRoute(),
     path: '/day-1',
   },
+  day2: {
+    route: createRoute(),
+    path: '/day-2',
+  },
 };
 
 export const notFoundRoute = createRoute();

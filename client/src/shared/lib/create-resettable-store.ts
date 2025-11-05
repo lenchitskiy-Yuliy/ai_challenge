@@ -1,11 +1,4 @@
-import {
-  createEvent,
-  createStore,
-  sample,
-  type Event,
-  type EventCallable,
-  type Store,
-} from 'effector';
+import { createEvent, createStore, sample, type EventCallable, type Store } from 'effector';
 
 export const resetAll = createEvent();
 
@@ -17,8 +10,8 @@ export function createResettableStore<T>(
   initialState: null,
   options?: Options,
 ): {
-  reset: Event<void>;
-  setStore: Event<T>;
+  reset: EventCallable<void>;
+  setStore: EventCallable<T>;
   $store: Store<T | null>;
 };
 

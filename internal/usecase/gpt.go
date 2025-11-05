@@ -15,7 +15,7 @@ type GPTMessage struct {
 }
 
 type GPTUsecase interface {
-	Complete(ctx context.Context, messages []GPTMessage) (*errors.AppError, string)
+	Complete(ctx context.Context, body map[string]interface{}) (*errors.AppError, string)
 }
 
 type gptUsecase struct {
@@ -27,19 +27,11 @@ func NewGPTUsecase(c clients.YandexClient, logger *zap.Logger) GPTUsecase {
 	return &gptUsecase{client: c, logger: logger}
 }
 
-func (g *gptUsecase) Complete(ctx context.Context, messages []GPTMessage) (*errors.AppError, string) {
-	cms := make([]clients.Message, 0, len(messages))
-
-	for _, m := range messages {
-		cms = append(cms, clients.Message{Role: m.Role, Text: m.Text})
-	}
-
-	reply, err := g.client.CallCompletion(ctx, cms)
-
+func (g *gptUsecase) Complete(ctx context.Context, body map[string]interface{}) (*errors.AppError, string) {
+	reply, err := g.client.CallCompletion(ctx, body)
 	if err != nil {
 		g.logger.Error("client error", zap.Error(err))
 		return errors.Internal("failed to call external model", err), ""
 	}
-
 	return nil, reply
 }
