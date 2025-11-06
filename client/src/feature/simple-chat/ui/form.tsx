@@ -25,7 +25,7 @@ export function Form() {
       sx={{ display: 'flex', alignItems: 'center', width: '100%' }}
       onSubmit={handleSubmit}
     >
-      <StringField label="Введите значение" model={promptField} />
+      <StringField multiline label="Введите значение" model={promptField} />
 
       <IconButton
         type="submit"

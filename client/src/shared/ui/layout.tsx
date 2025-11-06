@@ -20,6 +20,14 @@ const links = [
     label: 'День первый',
     route: routes.day1.route,
   },
+  {
+    label: 'День второй',
+    route: routes.day2.route,
+  },
+  {
+    label: 'День третий',
+    route: routes.day3.route,
+  },
 ];
 
 export function Layout({
