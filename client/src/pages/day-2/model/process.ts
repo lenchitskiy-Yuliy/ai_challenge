@@ -3,17 +3,19 @@ import { sample } from 'effector';
 import { routes } from '#shared/routing';
 import { resetAll } from '#shared/lib/create-resettable-store';
 import { createdJsonSchema, resetedJsonSchema } from '#feature/json-schema';
-import { resetJsonSchema, setJsonSchema } from '#feature/simple-chat';
+import { combineGPTChatModel } from '#feature/gpt-chat';
+
+export const { GPTChatModel, formModel } = combineGPTChatModel();
 
 sample({
   clock: createdJsonSchema,
   fn: (schema) => ({ schema }),
-  target: setJsonSchema,
+  target: formModel.setJsonSchema,
 });
 
 sample({
   clock: resetedJsonSchema,
-  target: resetJsonSchema,
+  target: formModel.resetJsonSchema,
 });
 
 sample({

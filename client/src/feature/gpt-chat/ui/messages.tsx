@@ -1,11 +1,12 @@
 import { List, ListItem, ListItemText } from '@mui/material';
 import { useUnit } from 'effector-react';
-import { $messages } from '../model/store';
+import type { MessagesModel } from '../model/messages';
+
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-export function Dialog() {
-  const { messages } = useUnit({ messages: $messages });
+export function Messages({ model }: { model: MessagesModel }) {
+  const { messages } = useUnit({ messages: model.$messages });
 
   return (
     <List sx={{ height: '100%', padding: 2 }}>

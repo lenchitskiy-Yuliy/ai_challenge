@@ -1,12 +1,12 @@
 import { Layout } from '#shared/ui/layout';
-import { SimpleChat } from '#feature/simple-chat';
+import { GPTChat } from '#feature/gpt-chat';
 
-import '../model/process';
+import { GPTChatModel } from '../model/process';
 
 export function Day1() {
   return (
     <Layout title="День первый">
-      <SimpleChat />
+      <GPTChat model={GPTChatModel} />
     </Layout>
   );
 }

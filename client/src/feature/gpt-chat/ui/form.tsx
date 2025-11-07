@@ -2,14 +2,14 @@ import { StringField } from '#shared/lib/fields';
 import { Box, CircularProgress, IconButton } from '@mui/material';
 
 import SendIcon from '@mui/icons-material/Send';
-import { $disabelSubmit, $submiting, promptField, submit } from '../model/form';
+import type { FormModel } from '../model/form';
 import { useUnit } from 'effector-react';
 
-export function Form() {
+export function Form({ model }: { model: FormModel }) {
   const { onSubmit, disabelSubmit, submiting } = useUnit({
-    onSubmit: submit,
-    disabelSubmit: $disabelSubmit,
-    submiting: $submiting,
+    onSubmit: model.submit,
+    disabelSubmit: model.$disabelSubmit,
+    submiting: model.$submiting,
   });
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -25,7 +25,12 @@ export function Form() {
       sx={{ display: 'flex', alignItems: 'center', width: '100%' }}
       onSubmit={handleSubmit}
     >
-      <StringField multiline label="Введите значение" model={promptField} />
+      <StringField
+        multiline
+        label="Введите значение"
+        disabled={submiting}
+        model={model.promptField}
+      />
 
       <IconButton
         type="submit"
@@ -33,7 +38,11 @@ export function Form() {
         aria-label="submit"
         disabled={disabelSubmit}
       >
-        {submiting ? <CircularProgress color="info" size="20px" /> : <SendIcon />}
+        {submiting ? (
+          <CircularProgress color="info" size="20px" />
+        ) : (
+          <SendIcon color={disabelSubmit ? 'disabled' : 'primary'} />
+        )}
       </IconButton>
     </Box>
   );

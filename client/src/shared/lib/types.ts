@@ -33,10 +33,10 @@ export interface GPTTool {
 }
 
 export interface GPTCompletionOptions {
-  stream: boolean;
-  temperature: number;
-  maxTokens: string;
-  reasoningOptions: {
+  stream?: boolean;
+  temperature?: number;
+  maxTokens?: string;
+  reasoningOptions?: {
     mode: string;
   };
 }

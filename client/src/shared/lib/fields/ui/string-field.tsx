@@ -5,7 +5,10 @@ import type { StringFieldModel } from '../models/create-string-field';
 import { TextField, type TextFieldProps } from '@mui/material';
 
 interface StringFieldProps
-  extends Pick<TextFieldProps, 'label' | 'type' | 'fullWidth' | 'multiline' | 'minRows'> {
+  extends Pick<
+    TextFieldProps,
+    'label' | 'type' | 'fullWidth' | 'multiline' | 'minRows' | 'disabled'
+  > {
   model: StringFieldModel;
 }
 
