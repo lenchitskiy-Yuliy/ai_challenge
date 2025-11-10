@@ -21,6 +21,14 @@ export const routes = {
     route: createRoute(),
     path: '/day-4',
   },
+  day5: {
+    route: createRoute(),
+    path: '/day-5',
+  },
 };
+
+const routesValue = Object.values(routes);
+
+export const lastRoute = routesValue[routesValue.length - 1].route;
 
 export const notFoundRoute = createRoute();

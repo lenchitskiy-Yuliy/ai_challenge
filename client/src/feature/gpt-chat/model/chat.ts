@@ -20,7 +20,7 @@ export function createGPTChatModel({
     fn: ({ messages }) => {
       return messages.concat(<GPTMessage>{
         role: 'assistant',
-        text: '🤔 Thinking...',
+        text: '🤔 Думаю...',
       });
     },
     target: messagesModel.setMessages,
@@ -30,20 +30,13 @@ export function createGPTChatModel({
     clock: fetchModel.gptDone,
     source: messagesModel.$messages,
     fn: (messages, { result: { reply } }) => {
-      if (messages.length > 0 && messages[messages.length - 1].text === '🤔 Thinking...') {
-        return [
-          ...messages.slice(0, -1),
-          <GPTMessage>{
-            role: 'assistant',
-            text: reply,
-          },
-        ];
-      }
-
-      return messages.concat(<GPTMessage>{
-        role: 'assistant',
-        text: reply,
-      });
+      return [
+        ...messages.slice(0, -1),
+        <GPTMessage>{
+          role: 'assistant',
+          text: reply,
+        },
+      ];
     },
     target: messagesModel.setMessages,
   });
@@ -52,20 +45,13 @@ export function createGPTChatModel({
     clock: fetchModel.gptFail,
     source: messagesModel.$messages,
     fn: (messages) => {
-      if (messages.length > 0 && messages[messages.length - 1].text === '🤔 Thinking...') {
-        return [
-          ...messages.slice(0, -1),
-          <GPTMessage>{
-            role: 'assistant',
-            text: '❌ Error processing request',
-          },
-        ];
-      }
-
-      return messages.concat(<GPTMessage>{
-        role: 'assistant',
-        text: '❌ Error processing request',
-      });
+      return [
+        ...messages.slice(0, -1),
+        <GPTMessage>{
+          role: 'assistant',
+          text: '❌ Ошибка',
+        },
+      ];
     },
     target: messagesModel.setMessages,
   });

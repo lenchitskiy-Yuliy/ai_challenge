@@ -5,15 +5,18 @@ import { resetAll } from '#shared/lib/create-resettable-store';
 import { combineGPTChatModel } from '#feature/gpt-chat';
 
 export const { GPTChatModel: firstGPTChatModel } = combineGPTChatModel({
-  formProps: { temperature: 0.1 },
+  formProps: { temperature: 0 },
 });
+
 export const { GPTChatModel: secondGPTChatModel } = combineGPTChatModel({
-  formProps: { temperature: 0.1 },
+  formProps: { temperature: 0.5 },
 });
-export const { GPTChatModel: thirdGPTChatModel } = combineGPTChatModel();
-export const { GPTChatModel: fourthGPTChatModel } = combineGPTChatModel();
+
+export const { GPTChatModel: thirdGPTChatModel } = combineGPTChatModel({
+  formProps: { temperature: 1 },
+});
 
 sample({
-  clock: routes.day4.route.closed,
+  clock: routes.day5.route.closed,
   target: resetAll,
 });

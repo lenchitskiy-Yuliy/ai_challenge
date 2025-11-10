@@ -40,7 +40,7 @@ export function createFormModel({
         }),
       };
 
-      if (temperature) data.completionOptions = { temperature };
+      if (temperature !== undefined) data.completionOptions = { temperature };
       if (jsonSchema) data.jsonSchema = jsonSchema;
 
       return data;

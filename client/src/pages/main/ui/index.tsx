@@ -1,11 +1,11 @@
-import { routes } from '#shared/routing';
+import { lastRoute } from '#shared/routing';
 import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
 import '../model/process';
 
 export function Main() {
-  const reddirect = useUnit(routes.day1.route.open);
+  const reddirect = useUnit(lastRoute.open);
 
   useEffect(() => {
     reddirect();
