@@ -12,15 +12,16 @@ export interface GPTToolResult {
   };
 }
 
+export interface GPTMessageMeta {
+  spentTokens?: number;
+  executionDuration?: number;
+}
+
 export interface GPTMessage {
   role: 'user' | 'assistant' | 'system';
   text: string;
-  toolCallList?: {
-    toolCalls: GPTToolCall[];
-  };
-  toolResultList?: {
-    toolResults: GPTToolResult[];
-  };
+  status: 'success' | 'process' | 'error';
+  meta?: GPTMessageMeta;
 }
 
 export interface GPTTool {

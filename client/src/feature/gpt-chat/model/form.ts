@@ -34,10 +34,12 @@ export function createFormModel({
       if (!prompt) return null;
 
       const data: GPTApiRequest = {
-        messages: messages.concat({
-          role: 'user',
-          text: prompt,
-        }),
+        messages: messages
+          .map(({ role, text }) => ({ role, text }))
+          .concat({
+            role: 'user',
+            text: prompt,
+          }),
       };
 
       if (temperature !== undefined) data.completionOptions = { temperature };

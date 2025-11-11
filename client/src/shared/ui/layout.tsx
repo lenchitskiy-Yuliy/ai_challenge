@@ -36,6 +36,10 @@ const links = [
     label: 'День пятый',
     route: routes.day5.route,
   },
+  {
+    label: 'День шестой',
+    route: routes.day6.route,
+  },
 ];
 
 export function Layout({

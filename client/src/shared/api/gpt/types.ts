@@ -1,7 +1,7 @@
 import type { GPTMessage, GPTCompletionOptions, GPTJsonSchema, GPTTool } from '#shared/lib/types';
 
 export interface GPTApiRequest {
-  messages: GPTMessage[];
+  messages: Pick<GPTMessage, 'role' | 'text'>[];
   completionOptions?: GPTCompletionOptions;
   tools?: GPTTool[];
   jsonObject?: boolean;
@@ -13,6 +13,8 @@ export interface GPTApiRequest {
   };
 }
 
-export interface GPTApiResponce {
+export interface GPTApiResponse {
   reply: string;
+  spentTokens?: number;
+  executionDuration?: number;
 }

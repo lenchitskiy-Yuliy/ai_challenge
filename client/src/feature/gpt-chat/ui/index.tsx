@@ -1,15 +1,21 @@
-import { Messages } from './messages';
+import { Messages, type MessagesProps } from './messages';
 import { Form } from './form';
 
 import '../model/chat';
 import { Box } from '@mui/material';
 import type { GPTChatModel } from '../model/chat';
 
-export function GPTChat({ model }: { model: GPTChatModel }) {
+export function GPTChat({
+  model,
+  messagesProps = {},
+}: {
+  model: GPTChatModel;
+  messagesProps?: MessagesProps;
+}) {
   return (
     <Box sx={{ height: '100%', width: '100%', position: 'relative' }}>
       <Box sx={{ flexGrow: 1, paddingBottom: 10 }}>
-        <Messages model={model.messagesModel} />
+        <Messages model={model.messagesModel} {...messagesProps} />
       </Box>
 
       <Box sx={{ position: 'absolute', bottom: 20, left: 20, right: 20, backgroundColor: 'white' }}>

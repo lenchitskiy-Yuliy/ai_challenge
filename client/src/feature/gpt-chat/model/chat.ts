@@ -17,42 +17,49 @@ export function createGPTChatModel({
 }) {
   sample({
     clock: fetchModel.gpt,
-    fn: ({ messages }) => {
-      return messages.concat(<GPTMessage>{
-        role: 'assistant',
-        text: '🤔 Думаю...',
-      });
-    },
+    source: messagesModel.$messages,
+    fn: (messages, request) =>
+      messages.concat(<GPTMessage[]>[
+        {
+          role: 'user',
+          status: 'success',
+          text: request.messages[request.messages.length - 1].text,
+        },
+        {
+          role: 'assistant',
+          text: '🤔 Думаю...',
+          status: 'process',
+        },
+      ]),
     target: messagesModel.setMessages,
   });
 
   sample({
     clock: fetchModel.gptDone,
     source: messagesModel.$messages,
-    fn: (messages, { result: { reply } }) => {
-      return [
-        ...messages.slice(0, -1),
-        <GPTMessage>{
+    fn: (messages, { result: { reply, executionDuration, spentTokens } }) =>
+      messages
+        .filter(({ status }) => status !== 'process')
+        .concat({
           role: 'assistant',
           text: reply,
-        },
-      ];
-    },
+          status: 'success',
+          meta: { executionDuration, spentTokens },
+        }),
     target: messagesModel.setMessages,
   });
 
   sample({
     clock: fetchModel.gptFail,
     source: messagesModel.$messages,
-    fn: (messages) => {
-      return [
-        ...messages.slice(0, -1),
-        <GPTMessage>{
+    fn: (messages) =>
+      messages
+        .filter(({ status }) => status !== 'process')
+        .concat({
           role: 'assistant',
           text: '❌ Ошибка',
-        },
-      ];
-    },
+          status: 'success',
+        }),
     target: messagesModel.setMessages,
   });
 

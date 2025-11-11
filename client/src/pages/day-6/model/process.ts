@@ -3,24 +3,24 @@ import { sample } from 'effector';
 import { routes } from '#shared/routing';
 import { resetAll } from '#shared/lib/create-resettable-store';
 import { combineGPTChatModel } from '#feature/gpt-chat';
-import { yndexGptApi } from '#shared/api/gpt';
+import { huggingfaceBaiduAPI, huggingfaceQwenAPI, huggingfaceOpenaiAPI } from '#shared/api/gpt';
 
 export const { GPTChatModel: firstGPTChatModel } = combineGPTChatModel({
-  formProps: { temperature: 0.1 },
-  fetchProps: { handler: yndexGptApi },
+  formProps: { temperature: 0.5 },
+  fetchProps: { handler: huggingfaceOpenaiAPI },
 });
+
 export const { GPTChatModel: secondGPTChatModel } = combineGPTChatModel({
-  formProps: { temperature: 0.1 },
-  fetchProps: { handler: yndexGptApi },
+  formProps: { temperature: 0.5 },
+  fetchProps: { handler: huggingfaceQwenAPI },
 });
+
 export const { GPTChatModel: thirdGPTChatModel } = combineGPTChatModel({
-  fetchProps: { handler: yndexGptApi },
-});
-export const { GPTChatModel: fourthGPTChatModel } = combineGPTChatModel({
-  fetchProps: { handler: yndexGptApi },
+  formProps: { temperature: 0.5 },
+  fetchProps: { handler: huggingfaceBaiduAPI },
 });
 
 sample({
-  clock: routes.day4.route.closed,
+  clock: routes.day6.route.closed,
   target: resetAll,
 });
