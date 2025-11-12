@@ -37,14 +37,14 @@ export function createGPTChatModel({
   sample({
     clock: fetchModel.gptDone,
     source: messagesModel.$messages,
-    fn: (messages, { result: { reply, executionDuration, spentTokens } }) =>
+    fn: (messages, { result: { reply, ...meta } }) =>
       messages
         .filter(({ status }) => status !== 'process')
         .concat({
           role: 'assistant',
           text: reply,
           status: 'success',
-          meta: { executionDuration, spentTokens },
+          meta,
         }),
     target: messagesModel.setMessages,
   });

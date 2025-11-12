@@ -17,4 +17,6 @@ export interface GPTApiResponse {
   reply: string;
   spentTokens?: number;
   executionDuration?: number;
+  promptTokens?: number;
+  completionTokens?: number;
 }

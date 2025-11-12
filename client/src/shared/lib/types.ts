@@ -15,6 +15,8 @@ export interface GPTToolResult {
 export interface GPTMessageMeta {
   spentTokens?: number;
   executionDuration?: number;
+  promptTokens?: number;
+  completionTokens?: number;
 }
 
 export interface GPTMessage {

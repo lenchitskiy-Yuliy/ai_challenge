@@ -3,6 +3,7 @@ import { router, routes } from '#shared/routing';
 import { Route, RouterProvider } from 'atomic-router-react';
 import { AuthWrapper } from './auth';
 import { Day6 } from '#pages/day-6';
+import { Day7 } from '#pages/day-7';
 
 export function App() {
   return (
@@ -15,6 +16,7 @@ export function App() {
         <Route route={routes.day4.route} view={Day4} />
         <Route route={routes.day5.route} view={Day5} />
         <Route route={routes.day6.route} view={Day6} />
+        <Route route={routes.day7.route} view={Day7} />
       </AuthWrapper>
     </RouterProvider>
   );

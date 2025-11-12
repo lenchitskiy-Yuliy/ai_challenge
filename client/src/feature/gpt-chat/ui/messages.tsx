@@ -14,7 +14,12 @@ export interface MessagesProps {
 export function Messages({ model, showMeta }: { model: MessagesModel } & MessagesProps) {
   const { messages } = useUnit({ messages: model.$messages });
 
-  function renderMeta({ executionDuration, spentTokens }: GPTMessageMeta) {
+  function renderMeta({
+    executionDuration,
+    spentTokens,
+    completionTokens,
+    promptTokens,
+  }: GPTMessageMeta) {
     if (!executionDuration && !spentTokens) return null;
 
     return (
@@ -28,7 +33,15 @@ export function Messages({ model, showMeta }: { model: MessagesModel } & Message
             Прошло времени: {convertMillisecondsToSeconds(executionDuration)} сек.
           </Typography>
         )}
-        {spentTokens && <Typography variant="body2">Потрачено точенов: {spentTokens}</Typography>}
+        {promptTokens && (
+          <Typography variant="body2">Потрачено токенов на запрос: {promptTokens}</Typography>
+        )}
+        {completionTokens && (
+          <Typography variant="body2">Потрачено токенов на ответ: {completionTokens}</Typography>
+        )}
+        {spentTokens && (
+          <Typography variant="body2">Всего потрачено токенов: {spentTokens}</Typography>
+        )}
       </Box>
     );
   }

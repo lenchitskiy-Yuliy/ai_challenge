@@ -3,19 +3,20 @@ import type { GPTApiRequest, GPTApiResponse } from './types';
 
 const client = new InferenceClient(import.meta.env.VITE_HUGGINGFACE);
 
-export async function metaLlama(data: GPTApiRequest): Promise<GPTApiResponse> {
+export async function huggingfaceMetaLlamaApi(data: GPTApiRequest): Promise<GPTApiResponse> {
+  const startTime = Date.now();
+
   const result = await client.chatCompletion({
     model: 'meta-llama/Llama-3.1-8B-Instruct',
     messages: data.messages.map(({ role, text }) => ({ role, content: text })),
     max_tokens: 512,
   });
 
-  console.log(result);
-
   return {
     reply: result.choices[0]?.message.content || '',
-    spentTokens: result.usage.total_tokens,
-    executionDuration: result.created,
+    promptTokens: result.usage.prompt_tokens,
+    completionTokens: result.usage.completion_tokens,
+    executionDuration: Date.now() - startTime,
   };
 }
 
