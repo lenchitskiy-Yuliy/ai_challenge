@@ -1,0 +1,51 @@
+# TASK: DIALOGUE COMPRESSION AND ANALYSIS
+
+Based on the complete dialogue history provided in the context, perform a two-stage analysis:
+
+## STAGE 1: ANALYTICAL SUMMARY
+
+Create a brief structured summary of the dialogue, highlighting the following key points:
+
+**DIALOGUE CORE:**
+- Main topic/problem:
+- Key aspects discussed:
+- Resolved issues:
+
+**CRITICAL ELEMENTS:**
+- Explicit rules and instructions:
+- Stylistic preferences (tone, format, language):
+- Limitations and prohibitions:
+- Special data processing requirements:
+
+**DIALOGUE DYNAMICS:**
+- Task evolution (how requirements changed):
+- Clarifying moments:
+- Key agreements:
+
+## STAGE 2: SYSTEM PROMPT SYNTHESIS
+
+Based on the analysis, create an optimal system prompt:
+
+**PROMPT REQUIREMENTS:**
+- Self-sufficiency and completeness
+- Language and thematic adaptability
+- Clarity and unambiguous phrasing
+- Preservation of all critical constraints
+- Natural integration of the assistant's persona
+
+**PROMPT STRUCTURE SHOULD INCLUDE:**
+1. Clear definition of role and task
+2. Input data processing instructions
+3. Response generation rules
+4. Stylistic and format requirements
+5. Limitations and prohibitions
+
+## FINAL OUTPUT:
+
+Provide the response in the following format:
+
+### BRIEF DIALOGUE SUMMARY:
+[Place the structured analysis here according to the above scheme]
+
+### SYSTEM PROMPT:
+[Place only the clean, ready-to-use prompt here]

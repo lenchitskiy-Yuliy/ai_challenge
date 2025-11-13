@@ -1,7 +1,22 @@
 import type { GPTMessage, GPTCompletionOptions, GPTJsonSchema, GPTTool } from '#shared/lib/types';
 
+export type ApiGPTMessage = Pick<GPTMessage, 'role' | 'text'>;
+
+export interface YandexResponse {
+  result: {
+    alternatives: {
+      message: ApiGPTMessage;
+    }[];
+    usage: {
+      inputTextTokens: string;
+      completionTokens: string;
+      totalTokens: string;
+    };
+  };
+}
+
 export interface GPTApiRequest {
-  messages: Pick<GPTMessage, 'role' | 'text'>[];
+  messages: ApiGPTMessage[];
   completionOptions?: GPTCompletionOptions;
   tools?: GPTTool[];
   jsonObject?: boolean;
@@ -14,9 +29,9 @@ export interface GPTApiRequest {
 }
 
 export interface GPTApiResponse {
-  reply: string;
-  spentTokens?: number;
+  messages: ApiGPTMessage[];
+  spentTokens?: number | string;
   executionDuration?: number;
-  promptTokens?: number;
-  completionTokens?: number;
+  promptTokens?: number | string;
+  completionTokens?: number | string;
 }

@@ -20,10 +20,6 @@ type requestDTO struct {
 	Messages []messageDTO `json:"messages"`
 }
 
-type responseDTO struct {
-	Reply string `json:"reply"`
-}
-
 func MakeGPTHandler(GPTUsecase usecase.GPTUsecase) router.AppHandler {
 	return func(ctx context.Context, r *http.Request) (interface{}, *errors.AppError) {
 		body, err := io.ReadAll(r.Body)
@@ -38,12 +34,12 @@ func MakeGPTHandler(GPTUsecase usecase.GPTUsecase) router.AppHandler {
 			return nil, errors.BadRequest("invalid JSON", err)
 		}
 
-		errGPT, reply := GPTUsecase.Complete(ctx, req)
+		errGPT, responseData := GPTUsecase.Complete(ctx, req)
 
 		if errGPT != nil {
 			return nil, errors.Internal("gpt completion failed", errGPT.Err)
 		}
 
-		return responseDTO{Reply: reply}, nil
+		return responseData, nil
 	}
 }

@@ -7,11 +7,7 @@ export interface CreateFetchModelProps {
   handler: (data: GPTApiRequest) => Promise<GPTApiResponse>;
 }
 
-export function createFetchModel({
-  handler,
-}: {
-  handler: (data: GPTApiRequest) => Promise<GPTApiResponse>;
-}) {
+export function createFetchModel({ handler }: CreateFetchModelProps) {
   const {
     fetch: gpt,
     success: gptSucess,
@@ -20,5 +16,11 @@ export function createFetchModel({
     $isPending: $gptLoading,
   } = createFetch(handler);
 
-  return { gpt, gptSucess, gptDone, gptFail, $gptLoading };
+  return {
+    gpt,
+    gptSucess,
+    gptDone,
+    gptFail,
+    $gptLoading,
+  };
 }

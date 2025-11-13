@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"log"
+	"main/internal/clients"
 	"main/internal/errors"
 	"net/http"
 )
@@ -35,6 +36,22 @@ func MakeHandler(fn AppHandler) http.Handler {
 			return
 		}
 
+		// Handle proxy responses directly (pass through status code and body)
+		if proxyRes, ok := res.(*clients.ResponseData); ok {
+			// Copy headers from Yandex response
+			for key, values := range proxyRes.Headers {
+				for _, value := range values {
+					w.Header().Add(key, value)
+				}
+			}
+			// Set status code from Yandex
+			w.WriteHeader(proxyRes.StatusCode)
+			// Write body directly without modification
+			_, _ = w.Write(proxyRes.Body)
+			return
+		}
+
+		// Default JSON response handling
 		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(res); err != nil {
 			log.Printf("encode response error: %v", err)

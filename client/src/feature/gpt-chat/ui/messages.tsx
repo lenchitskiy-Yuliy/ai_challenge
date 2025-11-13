@@ -1,14 +1,22 @@
 import { Box, List, ListItem, ListItemText, Typography } from '@mui/material';
 import { useUnit } from 'effector-react';
+import type { Property } from 'csstype';
 import type { MessagesModel } from '../model/messages';
 
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import type { GPTMessageMeta } from '#shared/lib/types';
+import type { GPTMessageMeta, GPTMessageRole } from '#shared/lib/types';
 import { convertMillisecondsToSeconds } from '#shared/lib/convert-milliseconds-to-seconds';
 
 export interface MessagesProps {
-  showMeta?: boolean;
+  showMeta?:
+    | boolean
+    | {
+        executionDuration?: true;
+        promptTokens?: true;
+        completionTokens?: true;
+        spentTokens?: true;
+      };
 }
 
 export function Messages({ model, showMeta }: { model: MessagesModel } & MessagesProps) {
@@ -20,7 +28,37 @@ export function Messages({ model, showMeta }: { model: MessagesModel } & Message
     completionTokens,
     promptTokens,
   }: GPTMessageMeta) {
-    if (!executionDuration && !spentTokens) return null;
+    const texts: string[] = [];
+
+    const showExecutionDuration =
+      showMeta && executionDuration && (showMeta === true || 'executionDuration' in showMeta);
+
+    const showPromptTokens =
+      showMeta && promptTokens && (showMeta === true || 'promptTokens' in showMeta);
+
+    const showCompletionTokens =
+      showMeta && completionTokens && (showMeta === true || 'completionTokens' in showMeta);
+
+    const showSpentTokens =
+      showMeta && spentTokens && (showMeta === true || 'spentTokens' in showMeta);
+
+    if (showExecutionDuration) {
+      texts.push(` Прошло времени: ${convertMillisecondsToSeconds(executionDuration)} сек.`);
+    }
+
+    if (showPromptTokens) {
+      texts.push(`Потрачено токенов на запрос: ${promptTokens}`);
+    }
+
+    if (showCompletionTokens) {
+      texts.push(`Потрачено токенов на ответ: ${completionTokens}`);
+    }
+
+    if (showSpentTokens) {
+      texts.push(`Всего потрачено токенов: ${spentTokens}`);
+    }
+
+    if (!texts.length) return null;
 
     return (
       <Box
@@ -28,44 +66,53 @@ export function Messages({ model, showMeta }: { model: MessagesModel } & Message
           marginTop: 1,
         }}
       >
-        {executionDuration && (
-          <Typography variant="body2">
-            Прошло времени: {convertMillisecondsToSeconds(executionDuration)} сек.
+        {texts.map((text, index) => (
+          <Typography variant="body2" key={index}>
+            {text}
           </Typography>
-        )}
-        {promptTokens && (
-          <Typography variant="body2">Потрачено токенов на запрос: {promptTokens}</Typography>
-        )}
-        {completionTokens && (
-          <Typography variant="body2">Потрачено токенов на ответ: {completionTokens}</Typography>
-        )}
-        {spentTokens && (
-          <Typography variant="body2">Всего потрачено токенов: {spentTokens}</Typography>
-        )}
+        ))}
       </Box>
     );
   }
 
+  const backgroundColors: Record<GPTMessageRole, Property.BackgroundColor> = {
+    user: '#e0f7fa',
+    assistant: '#f3e5f5',
+    system: '#bfbfbfff',
+  };
+
+  const titles = {
+    user: 'Вы',
+    assistant: 'AI',
+    system: 'Sys',
+  };
+
   return (
     <List sx={{ height: '100%', padding: 2 }}>
-      {messages.map((message, index) => (
-        <ListItem key={index}>
-          <Box>
-            <ListItemText
-              primary={message.role === 'user' ? 'Вы' : 'AI'}
-              secondary={<Markdown remarkPlugins={[remarkGfm]}>{message.text}</Markdown>}
+      {messages
+        .filter(({ role }) => role !== 'system')
+        .map((message, index) => (
+          <ListItem key={index}>
+            <Box
               sx={{
-                backgroundColor: message.role === 'user' ? '#e0f7fa' : '#f3e5f5',
-                borderRadius: 1,
-                padding: 1,
-                wordWrap: 'break-word',
+                width: '100%',
               }}
-            />
+            >
+              <ListItemText
+                primary={titles[message.role]}
+                secondary={<Markdown remarkPlugins={[remarkGfm]}>{message.text}</Markdown>}
+                sx={{
+                  backgroundColor: backgroundColors[message.role],
+                  borderRadius: 1,
+                  padding: 1,
+                  wordWrap: 'break-word',
+                }}
+              />
 
-            {showMeta && message.meta && renderMeta(message.meta)}
-          </Box>
-        </ListItem>
-      ))}
+              {showMeta && message.meta && renderMeta(message.meta)}
+            </Box>
+          </ListItem>
+        ))}
     </List>
   );
 }

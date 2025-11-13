@@ -19,8 +19,10 @@ export interface GPTMessageMeta {
   completionTokens?: number;
 }
 
+export type GPTMessageRole = 'user' | 'assistant' | 'system';
+
 export interface GPTMessage {
-  role: 'user' | 'assistant' | 'system';
+  role: GPTMessageRole;
   text: string;
   status: 'success' | 'process' | 'error';
   meta?: GPTMessageMeta;

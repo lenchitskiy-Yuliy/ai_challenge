@@ -3,6 +3,7 @@ import { sample } from 'effector';
 import type { MessagesModel } from './messages';
 import type { FetchModel } from './fetch';
 import type { FormModel } from './form';
+import type { CompressModel } from './compress';
 
 export type GPTChatModel = ReturnType<typeof createGPTChatModel>;
 
@@ -10,10 +11,12 @@ export function createGPTChatModel({
   fetchModel,
   formModel,
   messagesModel,
+  compressModel,
 }: {
   fetchModel: FetchModel;
   messagesModel: MessagesModel;
   formModel: FormModel;
+  compressModel?: CompressModel;
 }) {
   sample({
     clock: fetchModel.gpt,
@@ -35,17 +38,22 @@ export function createGPTChatModel({
   });
 
   sample({
-    clock: fetchModel.gptDone,
+    clock: fetchModel.gptSucess,
     source: messagesModel.$messages,
-    fn: (messages, { result: { reply, ...meta } }) =>
-      messages
+    fn: (prevMessages, { messages, ...meta }) =>
+      prevMessages
         .filter(({ status }) => status !== 'process')
-        .concat({
-          role: 'assistant',
-          text: reply,
-          status: 'success',
-          meta,
-        }),
+        .concat(
+          messages.map(
+            ({ text }) =>
+              <GPTMessage>{
+                role: 'assistant',
+                text,
+                status: 'success',
+                meta,
+              },
+          ),
+        ),
     target: messagesModel.setMessages,
   });
 
@@ -63,9 +71,24 @@ export function createGPTChatModel({
     target: messagesModel.setMessages,
   });
 
+  if (compressModel) {
+    sample({
+      clock: messagesModel.setMessages,
+      target: compressModel.setCompressedMessages,
+    });
+
+    sample({
+      clock: compressModel.compressSucess,
+      fn: ({ messages }) =>
+        messages.map(({ text }) => <GPTMessage>{ text, status: 'success', role: 'system' }),
+      target: messagesModel.setMessages,
+    });
+  }
+
   return {
     fetchModel,
     formModel,
     messagesModel,
+    compressModel,
   };
 }

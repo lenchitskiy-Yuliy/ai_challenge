@@ -23,8 +23,17 @@ import (
 	"golang.org/x/time/rate"
 )
 
+// ResponseData holds the complete response from an external service (passed through as-is).
+// This struct is used for transparent proxying where the response status code, headers,
+// and body are forwarded directly to the client without any modification or parsing.
+type ResponseData struct {
+	StatusCode int
+	Headers    map[string][]string
+	Body       []byte
+}
+
 type YandexClient interface {
-	CallCompletion(ctx context.Context, body map[string]interface{}) (string, error)
+	CallCompletion(ctx context.Context, body map[string]interface{}) (*ResponseData, error)
 }
 
 type yandexClient struct {
@@ -62,19 +71,32 @@ func NewYandexClient(envs *config.Envs, logger *zap.Logger) YandexClient {
 	}
 }
 
-func (c *yandexClient) CallCompletion(ctx context.Context, body map[string]interface{}) (string, error) {
+// CallCompletion forwards a request to Yandex's completion API and returns the response as-is.
+// This implements transparent proxying:
+// - The HTTP status code from Yandex is preserved and returned
+// - The response body from Yandex is returned without modification or parsing
+// - All response headers from Yandex are included
+//
+// The method handles authentication (IAM token), rate limiting, and circuit breaking.
+// No business logic is applied to the response - it is returned exactly as received from Yandex.
+func (c *yandexClient) CallCompletion(ctx context.Context, body map[string]interface{}) (*ResponseData, error) {
+	// Apply rate limiting with context awareness
 	if err := c.limiter.WaitN(ctx, 1); err != nil {
-		return "", fmt.Errorf("rate limit: %w", err)
+		return nil, fmt.Errorf("rate limit: %w", err)
 	}
 
+	// Execute with circuit breaker for fault tolerance
 	res, err := c.cb.Execute(func() (interface{}, error) {
+		// Obtain Yandex IAM token
 		token, err := c.getIAMToken()
 		if err != nil {
 			return nil, err
 		}
 
+		// Prepare Yandex API endpoint
 		url := "https://llm.api.cloud.yandex.net/foundationModels/v1/completion"
 
+		// Merge user options with default completion options
 		defaultCompletion := map[string]interface{}{
 			"temperature": 0.6,
 			"maxTokens":   500,
@@ -97,8 +119,17 @@ func (c *yandexClient) CallCompletion(ctx context.Context, body map[string]inter
 			payload[k] = v
 		}
 
-		data, _ := json.Marshal(payload)
-		req, _ := http.NewRequestWithContext(ctx, "POST", url, bytes.NewReader(data))
+		// Build and send HTTP request to Yandex
+		data, err := json.Marshal(payload)
+		if err != nil {
+			return nil, fmt.Errorf("marshal request payload: %w", err)
+		}
+
+		req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewReader(data))
+		if err != nil {
+			return nil, fmt.Errorf("create request: %w", err)
+		}
+
 		req.Header.Set("Authorization", "Bearer "+token)
 		req.Header.Set("Content-Type", "application/json")
 
@@ -108,55 +139,36 @@ func (c *yandexClient) CallCompletion(ctx context.Context, body map[string]inter
 		}
 		defer resp.Body.Close()
 
-		bodyResp, _ := io.ReadAll(resp.Body)
-		if resp.StatusCode != http.StatusOK {
-			return nil, fmt.Errorf("llm returned %d: %s", resp.StatusCode, string(bodyResp))
+		// Read the complete response body from Yandex
+		bodyResp, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("read response body: %w", err)
 		}
 
-		var result map[string]interface{}
-		if err := json.Unmarshal(bodyResp, &result); err != nil {
-			return nil, err
-		}
-
-		resMap, ok := result["result"].(map[string]interface{})
-		if !ok {
-			return nil, fmt.Errorf("unexpected response format")
-		}
-
-		alts, ok := resMap["alternatives"].([]interface{})
-		if !ok || len(alts) == 0 {
-			return nil, fmt.Errorf("no alternatives")
-		}
-
-		alt0, ok := alts[0].(map[string]interface{})
-		if !ok {
-			return nil, fmt.Errorf("bad alt format")
-		}
-
-		msg, ok := alt0["message"].(map[string]interface{})
-		if !ok {
-			return nil, fmt.Errorf("no message")
-		}
-
-		text, _ := msg["text"].(string)
-		return text, nil
+		// Return the complete response unchanged (transparent proxy behavior)
+		// Status code, headers, and body are all from Yandex, unmodified
+		return &ResponseData{
+			StatusCode: resp.StatusCode,
+			Headers:    resp.Header,
+			Body:       bodyResp,
+		}, nil
 	})
 
 	if err != nil {
 		c.logger.Error("call completion failed", zap.Error(err))
-		return "", err
+		return nil, err
 	}
 
-	return res.(string), nil
+	return res.(*ResponseData), nil
 }
 
 func (c *yandexClient) getIAMToken() (string, error) {
 	privateKey, err := parsePrivateKey(c.envs.PrivateKey)
-
 	if err != nil {
 		return "", fmt.Errorf("parse key: %w", err)
 	}
 
+	// Prepare JWT claims
 	now := time.Now().Unix()
 	claims := map[string]interface{}{
 		"aud": "https://iam.api.cloud.yandex.net/iam/v1/tokens",
@@ -165,34 +177,47 @@ func (c *yandexClient) getIAMToken() (string, error) {
 		"exp": now + 3600,
 		"iat": now,
 	}
-	payload, _ := json.Marshal(claims)
+
+	payload, err := json.Marshal(claims)
+	if err != nil {
+		return "", fmt.Errorf("marshal claims: %w", err)
+	}
+
+	// Build JWT token
 	header := fmt.Sprintf(`{"alg":"PS256","kid":"%s"}`, c.envs.KeyID)
 	encodedHeader := base64.RawURLEncoding.EncodeToString([]byte(header))
 	encodedPayload := base64.RawURLEncoding.EncodeToString(payload)
 	signingInput := encodedHeader + "." + encodedPayload
 	hashed := sha256.Sum256([]byte(signingInput))
+
 	signature, err := rsa.SignPSS(rand.Reader, privateKey, crypto.SHA256, hashed[:], &rsa.PSSOptions{SaltLength: 32})
 	if err != nil {
 		return "", fmt.Errorf("sign: %w", err)
 	}
+
 	encodedSignature := base64.RawURLEncoding.EncodeToString(signature)
 	jwt := signingInput + "." + encodedSignature
 
+	// Exchange JWT for IAM token
 	resp, err := http.Post("https://iam.api.cloud.yandex.net/iam/v1/tokens", "application/json", bytes.NewReader([]byte(`{"jwt":"`+jwt+`"}`)))
 	if err != nil {
 		return "", fmt.Errorf("iam http: %w", err)
 	}
 	defer resp.Body.Close()
+
 	if resp.StatusCode != http.StatusOK {
 		b, _ := io.ReadAll(resp.Body)
 		return "", fmt.Errorf("iam status %d: %s", resp.StatusCode, string(b))
 	}
+
 	var out struct {
 		IAMToken string `json:"iamToken"`
 	}
+
 	if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
 		return "", fmt.Errorf("iam decode: %w", err)
 	}
+
 	return out.IAMToken, nil
 }
 

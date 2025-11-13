@@ -3,18 +3,18 @@ import { sample } from 'effector';
 import { routes } from '#shared/routing';
 import { resetAll } from '#shared/lib/create-resettable-store';
 import { combineGPTChatModel } from '#feature/gpt-chat';
-import { huggingfaceMetaLlamaApi } from '#shared/api/gpt';
+import { yndexGptApi } from '#shared/api/gpt';
 
 export const { GPTChatModel: firstGPTChatModel } = combineGPTChatModel({
-  fetchProps: { handler: huggingfaceMetaLlamaApi },
+  fetchProps: { handler: yndexGptApi },
 });
 
 export const { GPTChatModel: secondGPTChatModel } = combineGPTChatModel({
-  fetchProps: { handler: huggingfaceMetaLlamaApi },
+  fetchProps: { handler: yndexGptApi },
 });
 
 export const { GPTChatModel: thirdGPTChatModel } = combineGPTChatModel({
-  fetchProps: { handler: huggingfaceMetaLlamaApi },
+  fetchProps: { handler: yndexGptApi },
 });
 
 sample({

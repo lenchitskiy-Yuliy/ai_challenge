@@ -28,6 +28,12 @@ export function createFormModel({
     reset: resetJsonSchema,
   } = createResettableStore<GPTJsonSchema>(null);
 
+  const {
+    $store: $systemPrompt,
+    setStore: setSystemPrompt,
+    reset: resetSystemPrompt,
+  } = createResettableStore<string>(null);
+
   const $data = combine(
     { prompt: promptField.$value, messages: messagesModel.$messages, jsonSchema: $jsonSchema },
     ({ prompt, messages, jsonSchema }) => {
@@ -85,5 +91,8 @@ export function createFormModel({
     $data,
     $submiting,
     $disabelSubmit,
+    $systemPrompt,
+    setSystemPrompt,
+    resetSystemPrompt,
   };
 }

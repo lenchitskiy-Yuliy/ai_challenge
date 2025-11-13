@@ -4,6 +4,7 @@ import { Form } from './form';
 import '../model/chat';
 import { Box } from '@mui/material';
 import type { GPTChatModel } from '../model/chat';
+import { GPTCompress } from './compress';
 
 export function GPTChat({
   model,
@@ -14,6 +15,8 @@ export function GPTChat({
 }) {
   return (
     <Box sx={{ height: '100%', width: '100%', position: 'relative' }}>
+      {model.compressModel && <GPTCompress model={model.compressModel} />}
+
       <Box sx={{ flexGrow: 1, paddingBottom: 10 }}>
         <Messages model={model.messagesModel} {...messagesProps} />
       </Box>
