@@ -37,6 +37,10 @@ export const routes = {
     route: createRoute(),
     path: '/day-8',
   },
+  day9: {
+    route: createRoute(),
+    path: '/day-9',
+  },
 };
 
 const routesValue = Object.values(routes);

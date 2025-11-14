@@ -1,5 +1,5 @@
 import type { GPTMessage } from '#shared/lib/types';
-import { sample } from 'effector';
+import { createEvent, sample } from 'effector';
 import type { MessagesModel } from './messages';
 import type { FetchModel } from './fetch';
 import type { FormModel } from './form';
@@ -85,10 +85,21 @@ export function createGPTChatModel({
     });
   }
 
+  const clearChat = createEvent();
+  const $disabledClearChat = messagesModel.$messages.map((messages) => !messages.length);
+
+  sample({
+    clock: clearChat,
+    fn: () => [],
+    target: messagesModel.setMessages,
+  });
+
   return {
     fetchModel,
     formModel,
     messagesModel,
     compressModel,
+    clearChat,
+    $disabledClearChat,
   };
 }
